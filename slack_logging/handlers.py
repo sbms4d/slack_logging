@@ -25,7 +25,8 @@ class SlackLoggerHandler(logging.Handler):
         """
         webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if l == self.level or not l]
         if not webhooks:
-            raise RuntimeError('No Slack Webhooks are configured!')
+            raise RuntimeError('No Slack webhooks are configured!')
+        return webhooks
 
     def emit(self, record):
         """
@@ -41,7 +42,7 @@ class SlackLoggerHandler(logging.Handler):
 
                 requests.post(url=webhook, headers={'Content-Type': 'application/json'}, data=payload, timeout=5)
 
-        except (KeyboardInterrupt, SystemExit):
+        except (KeyboardInterrupt, SystemExit, RuntimeError):
             raise
         except (Exception, ):
             self.handleError(record)
