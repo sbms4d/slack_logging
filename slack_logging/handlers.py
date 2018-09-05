@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import logging
-import requests
 import ujson
 
-from slack_logging import WebHooks
+import requests
+
+from slack_logging.integrations import WebHooks
 
 
 class SlackLoggerHandler(logging.Handler):
@@ -17,10 +20,12 @@ class SlackLoggerHandler(logging.Handler):
     @property
     def valid_webhooks(self):
         """
-        Fetch the webhooks that should recieve the log message
+        Fetch the webhooks that should receive the log message
         :rtype: list[tuple[str,str]]
         """
-        return [(c.webhook, c.name) for l, c in WebHooks.items() if l == self.level or not l]
+        webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if l == self.level or not l]
+        if not webhooks:
+            raise RuntimeError('No Slack Webhooks are configured!')
 
     def emit(self, record):
         """
