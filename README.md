@@ -2,6 +2,8 @@
 
 The slack logging package provides an interface to send log messages to a suitably configured slack channel
 
+slack_logging currently supports python2 and python3.
+
 ## Interface
 The slack logging does not override the default python logging. 
 It provides a simple interface to create a logger capable of writing messages to slack
