@@ -17,13 +17,13 @@ class SlackLoggerHandler(logging.Handler):
     Should be used with the formatter: SlackLoggerFormatter
     """
 
-    @property
-    def valid_webhooks(self):
+    def get_valid_webhooks(self, level):
         """
         Fetch the webhooks that should receive the log message
         :rtype: list[tuple[str,str]]
         """
-        webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if not l or not self.level or l == self.level]
+
+        webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if not l or level == l]
         if not webhooks:
             raise RuntimeError('No Slack webhooks are configured!')
         return webhooks
@@ -36,13 +36,13 @@ class SlackLoggerHandler(logging.Handler):
         try:
             formatted_record = self.format(record)
 
-            for webhook, channel in self.valid_webhooks:
+            for webhook, channel in self.get_valid_webhooks(record.levelno):
 
                 payload = ujson.dumps({'text': formatted_record, 'username': record.name, 'channel': channel})
 
                 requests.post(url=webhook, headers={'Content-Type': 'application/json'}, data=payload, timeout=5)
 
-        except (KeyboardInterrupt, SystemExit, RuntimeError):
+        except (KeyboardInterrupt, SystemExit):
             raise
         except (Exception, ):
             self.handleError(record)
