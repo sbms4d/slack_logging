@@ -49,4 +49,5 @@ class SlackLoggerFormatter(logging.Formatter):
         return text
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        """Python3 formatters are non-equivalent given the same __init__ parameters"""
+        return dict(self.__dict__, _style=None) == dict(other.__dict__, _style=None)
