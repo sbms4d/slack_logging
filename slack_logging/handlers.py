@@ -22,7 +22,6 @@ class SlackLoggerHandler(logging.Handler):
         Fetch the webhooks that should receive the log message
         :rtype: list[tuple[str,str]]
         """
-
         webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if not l or level == l]
         if not webhooks:
             raise RuntimeError('No Slack webhooks are configured!')
