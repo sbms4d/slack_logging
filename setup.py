@@ -23,11 +23,11 @@ setup(
     name='slack_logging',
     version=about['__version__'],
     description='Python logger/handler for slack integration',
-url='https://github.com/iotgdev/slack_logging/',
+    url='https://github.com/iotgdev/slack_logging/',
     author='iotec',
     author_email='dev@dsp.io',
     license='MIT',
-    download_url='https://github.com/iotgdev/slack_logging/archive/{}.tar.gz'.format(__version__),
+    download_url='https://github.com/iotgdev/slack_logging/archive/{}.tar.gz'.format(about['__version__']),
     long_description=about['readme'],
     platforms=[
         'Development Status :: 5 - Production/Stable',
