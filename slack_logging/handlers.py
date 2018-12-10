@@ -6,6 +6,7 @@ import logging
 import ujson
 
 import requests
+import sys
 
 from slack_logging.integrations import WebHooks
 
@@ -23,8 +24,6 @@ class SlackLoggerHandler(logging.Handler):
         :rtype: list[tuple[str,str]]
         """
         webhooks = [(c.webhook, c.name) for l, c in WebHooks.items() if not l or level == l]
-        if not webhooks:
-            raise RuntimeError('No Slack webhooks are configured!')
         return webhooks
 
     def emit(self, record):
