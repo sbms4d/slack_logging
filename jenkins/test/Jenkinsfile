@@ -1,0 +1,132 @@
+def result = ''
+def PACKAGE_VERSION = ''
+
+pipeline {
+
+    agent any
+
+    triggers {
+        pollSCM('*/1 * * * *')
+    }
+
+    stages {
+
+        stage('Wipe') {
+            steps {
+                script {
+                    deleteDir()
+
+                    try {
+                        dir('./slack_logging') {
+                            deleteDir()
+                        }
+                    }
+                    catch(Exception ex) {
+                        echo 'could not delete ./slack_logging'
+                    }
+                }
+            }
+        }
+
+        stage('Checkout repos') {
+            steps {
+
+                sh('mkdir -p ${WORKSPACE}/slack_logging')
+                dir('./slack_logging') {
+
+                    checkout([
+                        scm: [
+                            $class: 'GitSCM',
+                            branches: [[name: 'master']],
+                            doGenerateSubmoduleConfigurations: false,
+                            userRemoteConfigs: [[
+                                credentialsId: 'GitSSHCredentials',
+                                url: 'git@github.com:iotgdev/slack_logging.git'
+                            ]]
+                        ]
+                    ])
+
+                }
+            }
+        }
+
+        stage('Run unit tests in python3') {
+            steps {
+
+                dir('./slack_logging') {
+
+                    sh("rm -rf ${WORKSPACE}/.venv")
+                    sh("virtualenv -p /usr/bin/python3 ${WORKSPACE}/.venv")
+
+                    script {
+                        try {
+                            sh(". ${WORKSPACE}/.venv/bin/activate && python setup.py test -a '--junitxml=test.xml'")
+                        } catch(ex) {
+                            junit("test.xml")
+                            throw ex
+                        }
+                    }
+
+                    junit("test.xml")
+                }
+            }
+        }
+
+        stage('Run unit tests in python2') {
+            steps {
+
+                dir('./slack_logging') {
+
+                    sh("rm -rf ${WORKSPACE}/.venv")
+                    sh("virtualenv -p /usr/bin/python2 ${WORKSPACE}/.venv")
+
+                    script {
+                        try {
+                            sh(". ${WORKSPACE}/.venv/bin/activate && python setup.py test -a '--junitxml=test.xml'")
+                        } catch(ex) {
+                            junit("test.xml")
+                            throw ex
+                        }
+                    }
+
+                    junit("test.xml")
+                }
+            }
+        }
+
+        stage('Mark pre release') {
+            steps {
+
+                dir('./slack_logging') {
+
+                    script {
+                        PACKAGE_VERSION = sh(
+                            script: "python -c 'from version import __version__;print(__version__)'",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    sshagent (credentials: ['GitSSHCredentials']) {
+
+                        sh("git config user.email 'iotgbuildsupport@iotecglobal.com'")
+                        sh("git config user.name 'iotgbuildsupport'")
+
+                        script {
+                            try {
+                                sh("git tag -d $PACKAGE_VERSION-pre")
+                                sh("git push --delete origin $PACKAGE_VERSION-pre")
+                            } catch (error) {
+
+                            }
+                        }
+                        sh("git tag -a $PACKAGE_VERSION-pre -m 'pre-release candidate'")
+                        sh("git push origin $PACKAGE_VERSION-pre")
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+
