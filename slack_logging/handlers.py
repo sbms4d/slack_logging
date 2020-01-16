@@ -44,7 +44,3 @@ class SlackLoggerHandler(logging.Handler):
             raise
         except (Exception, ):
             self.handleError(record)
-
-    def __eq__(self, other):
-        """Compare objects except the lock state (set to None for no comparison)"""
-        return dict(self.__dict__, lock=None) == dict(other.__dict__, lock=None)
