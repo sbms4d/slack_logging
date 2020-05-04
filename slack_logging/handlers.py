@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import logging
-import ujson
+import json
 
 import requests
 import sys
@@ -36,7 +36,7 @@ class SlackLoggerHandler(logging.Handler):
 
             for webhook, channel in self.get_valid_webhooks(record.levelno):
 
-                payload = ujson.dumps({'text': formatted_record, 'username': record.name, 'channel': channel})
+                payload = json.dumps({'text': formatted_record, 'username': record.name, 'channel': channel})
 
                 requests.post(url=webhook, headers={'Content-Type': 'application/json'}, data=payload, timeout=5)
 

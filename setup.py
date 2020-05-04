@@ -48,6 +48,5 @@ setup(
     cmdclass={'pytest': about.get('PyTest')},
     install_requires=[
         'requests>=2.19.1',
-        'ujson>=1.35',
     ]
 )
